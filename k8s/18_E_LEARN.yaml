@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment    
+metadata:
+  name: kuber-frontend
+  labels:
+    app: kuber-frontend
+spec:
+  replicas: 3
+  minReadySeconds: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: kuber-frontend
+  template:
+    metadata:
+      labels:
+        app: kuber-frontend
+    spec:
+      containers:
+        - name: kuber-frontend
+          image: alkaponees/website:latest
+          ports:
+            - containerPort: 80
+---
+
+apiVersion: v1
+kind: Service    
+metadata:
+  name: kuber-frontend
+spec:
+  selector:
+    app: kuber-frontend
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: my-service
+                port:
+                  number: 80
+
+
